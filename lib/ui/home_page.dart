@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:buscadordegifs/ui/gif_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:share_plus/share_plus.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -25,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   Future<Map> _getSearch() async {
     http.Response response;
 
-    if(_search == null) {
+    if(_search == null || _search!.isEmpty) {
       response = await http.get(url1);
     } else {
       print(_offset.toString());
@@ -133,11 +136,21 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           if(_search == null || index < snapshot.data['data'].length)
             return GestureDetector(
-            child: Image.network(snapshot.data["data"][index]["images"]["fixed_height"]["url"],
-              height: 300.0,
-              fit: BoxFit.cover,
-            ),
-          );
+              child: FadeInImage.memoryNetwork(
+                placeholder: kTransparentImage,
+                image: snapshot.data["data"][index]["images"]["fixed_height"]["url"],
+                height: 300.0,
+                fit: BoxFit.cover,
+              ),
+              onTap: () {
+                Navigator.push(context, 
+                  MaterialPageRoute(builder: (context) => GifPage(snapshot.data['data'][index]))
+                );
+              },
+              onLongPress: () {
+                Share.share(snapshot.data["data"][index]["images"]["fixed_height"]["url"]);
+              },
+            );
           else
             return Container(
               child: GestureDetector(
