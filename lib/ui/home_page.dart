@@ -1,8 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:async';
-import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -12,7 +12,9 @@ class HomePage extends StatefulWidget {
 }
 
 var url1 = Uri.parse('https://api.giphy.com/v1/gifs/trending?api_key=kIJ3mPTyYAvOQsrc2eELx0vYu3PQY9d9&limit=25&rating=g');
-var url2 = 'https://api.giphy.com/v1/gifs/search?api_key=kIJ3mPTyYAvOQsrc2eELx0vYu3PQY9d9&q=xxxx&limit=25&offset=xx&rating=g&lang=pt';
+var url2 = 'https://api.giphy.com/v1/gifs/search?api_key=kIJ3mPTyYAvOQsrc2eELx0vYu3PQY9d9&q=';
+var url3 = '&limit=19&offset=';
+var url4 = '&rating=g&lang=pt';
 
 class _HomePageState extends State<HomePage> {
 
@@ -26,10 +28,13 @@ class _HomePageState extends State<HomePage> {
     if(_search == null) {
       response = await http.get(url1);
     } else {
-      url2.replaceAll("xxxx", _search!);
-      url2.replaceAll("xx", _offset.toString());
+      print(_offset.toString());
 
-      Uri url = Uri.parse(url2);
+      String urlx = url2 + _search! + url3 + _offset.toString() + url4;
+
+      print(urlx);
+
+      Uri url = Uri.parse(urlx);
       response = await http.get(url);
     }
 
@@ -72,6 +77,12 @@ class _HomePageState extends State<HomePage> {
                 fontSize: 10.0
               ),
               textAlign: TextAlign.center,
+              onSubmitted: (text) {
+                setState(() {
+                  _search = text;
+                  _offset=0;
+                });
+              },
             ),
           ),
           Expanded(
@@ -99,6 +110,53 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  int _setCount(List data) {
+    if(_search == null) {
+      return data.length;
+    } else {
+      return data.length + 1;
+    }
+  }
+
+  Widget _createGifTable(BuildContext context, AsyncSnapshot snapshot) {
+    return GridView.builder(
+        padding: EdgeInsets.all(10.0),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10.0,
+            mainAxisSpacing : 10.0,
+        ),
+        itemCount: _setCount(snapshot.data["data"]),
+        itemBuilder: (context, index) {
+          if(_search == null || index < snapshot.data['data'].length)
+            return GestureDetector(
+            child: Image.network(snapshot.data["data"][index]["images"]["fixed_height"]["url"],
+              height: 300.0,
+              fit: BoxFit.cover,
+            ),
+          );
+          else
+            return Container(
+              child: GestureDetector(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(Icons.add, color: Colors.white, size: 70.0,),
+                    Text("Carregar mais...",
+                      style: TextStyle(color: Colors.white, fontSize: 22.0),)
+                  ],
+                ),
+                onTap: () {
+                  setState(() {
+                    _offset += 19;
+                  });
+                },
+              ),
+            );
+        }
     );
   }
 }
