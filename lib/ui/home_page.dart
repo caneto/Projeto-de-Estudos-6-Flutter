@@ -1,8 +1,8 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
+import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -47,6 +47,58 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Image.network("https://developers.giphy.com/branch/master/static/header-logo-0fec0225d189bc0eae27dac3e3770582.gif"),
+        centerTitle: true,
+      ),
+      backgroundColor: Colors.black,
+      body: Column(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(10.0),
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: "Pesquise aqui",
+                labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white, width: 1.2),
+                  ),
+                border: OutlineInputBorder()
+              ),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10.0
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+              child: FutureBuilder(
+                future: _getSearch(),
+                builder: (context, snapshot) {
+                  switch(snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                    case ConnectionState.none:
+                      return Container(
+                        width: 200,
+                        height: 200,
+                        alignment: Alignment.center,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          strokeWidth: 5.0,
+                        ),
+                      );
+                     default:
+                       if(snapshot.hasError) return Container();
+                       else return _createGifTable(context, snapshot);
+                  }
+                }
+              ),
+          ),
+        ],
+      ),
+    );
   }
 }
